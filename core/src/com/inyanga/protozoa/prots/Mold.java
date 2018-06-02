@@ -30,8 +30,9 @@ public class Mold extends Proto {
     private float cyclePosition;
 
 
+    private Color randomColor;
     private Vector2 satellitePos;
-    private float direction;
+    private int direction;
 
     public Mold(Viewport viewport) {
         super(viewport);
@@ -44,10 +45,26 @@ public class Mold extends Proto {
         final float MAX_MUTATE = 1.0f;
         final float MIN_MUTATE = 0.5f;
 
+        switch (MathUtils.random(3)) {
+            case 0:
+                randomColor = Color.valueOf("26C6DA00");
+                break;
+            case 1:
+                randomColor = Color.valueOf("EF9A9A00");
+                break;
+            case 2:
+                randomColor = Color.valueOf("01579B00");
+                break;
+            case 3:
+                randomColor = Color.BLACK;
+                break;
+            default:
+                randomColor = Color.BLACK;
+    }
         isTargetSet = false;
-        float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
-        size = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
-        direction = (((int) MathUtils.random()) == 0) ? 1.0f : -1.0f;
+        direction = MathUtils.random(1);
+        float mutationFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
+        size = mutationFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
         position = setRandomPosition();
         satellitePos = new Vector2();
         initialTime = TimeUtils.nanoTime();
@@ -80,18 +97,27 @@ public class Mold extends Proto {
         final int RENDER_COUNT = 9;
         renderer.set(ShapeRenderer.ShapeType.Line);
 
-        Color color = Color.BLACK;
-        renderer.setColor(color);
+
+        renderer.setColor(Color.BLACK);
         renderer.circle(position.x, position.y, size);
         renderer.circle(position.x, position.y, size / 2f);
+
+
+        renderer.setColor(randomColor);
         renderer.circle(position.x, position.y, size / 3f);
         renderer.circle(position.x, position.y, size / 5f);
         renderer.circle(position.x, position.y, size / 10f);
 
 
         for (int i = 1; i < RENDER_COUNT; i++) {
-            satellitePos.x = position.x + size * 1.2f * -MathUtils.cos(MathUtils.PI2 * cyclePosition + ROTATION_OFFSET * i) * direction;
-            satellitePos.y = position.y + size * 1.2f * -MathUtils.sin(MathUtils.PI2 * cyclePosition + ROTATION_OFFSET * i) * direction;
+            if( direction == 0) {
+                satellitePos.x = position.x + size * 1.2f * MathUtils.sin(MathUtils.PI2 * cyclePosition + ROTATION_OFFSET * i) ;
+                satellitePos.y = position.y + size * 1.2f * MathUtils.cos(MathUtils.PI2 * cyclePosition + ROTATION_OFFSET * i) ;
+            } else {
+                satellitePos.x = position.x + size * 1.2f * MathUtils.cos(MathUtils.PI2 * cyclePosition + ROTATION_OFFSET * i) ;
+                satellitePos.y = position.y + size * 1.2f * MathUtils.sin(MathUtils.PI2 * cyclePosition + ROTATION_OFFSET * i) ;
+            }
+
 
             renderer.circle(satellitePos.x, satellitePos.y, size / 15.0f);
         }

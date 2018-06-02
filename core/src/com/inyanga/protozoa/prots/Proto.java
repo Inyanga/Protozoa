@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.inyanga.protozoa.ProtozoaColony;
 
 import java.util.Random;
 
@@ -43,10 +44,18 @@ public abstract class Proto {
         initialTime = 0L;
         isRunningToPoint = false;
         isFollow = false;
-        maxX = viewport.getWorldWidth() - viewport.getWorldWidth()/BOUND_X_DIVIDER;
-        maxY = viewport.getWorldHeight() - viewport.getWorldHeight()/BOUND_Y_DIVIDER;
-        minX = viewport.getWorldWidth()/BOUND_X_DIVIDER;
-        minY = viewport.getWorldHeight()/BOUND_Y_DIVIDER;
+        if(ProtozoaColony.isLogoVisible()) {
+            maxX = viewport.getWorldWidth() - viewport.getWorldWidth()/BOUND_X_DIVIDER;
+            maxY = viewport.getWorldHeight() - viewport.getWorldHeight()/BOUND_Y_DIVIDER;
+            minX = viewport.getWorldWidth()/BOUND_X_DIVIDER;
+            minY = viewport.getWorldHeight()/BOUND_Y_DIVIDER;
+        } else {
+            maxX = viewport.getWorldWidth();
+            maxY = viewport.getWorldHeight();
+            minX = 0;
+            minY = 0;
+        }
+
         reactionDistance = Math.min(viewport.getWorldWidth(), viewport.getWorldHeight()) / 4.0f;
     }
 
@@ -94,17 +103,16 @@ public abstract class Proto {
 
     public void runToPoint(Vector2 target) {
         isRunningToPoint = true;
-
         movement = new Vector2(target.x - position.x, target.y - position.y);
         velocity.mulAdd(movement, TO_POINT_ACC);
     }
 
     void follow(float acceleration) {
-        if (isTargetSet ) {
+        if (isTargetSet && !isRunningToPoint) {
             if (target.dst(position) <= reactionDistance) {
                 isFollow = true;
                 movement = new Vector2(target.x - position.x, target.y - position.y);
-                velocity.mulAdd(movement, (acceleration > 0) ? acceleration : -acceleration);
+                velocity.mulAdd(movement, acceleration);
             } else {
                 isFollow = false;
             }

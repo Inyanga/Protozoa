@@ -22,6 +22,7 @@ public class Microfly extends Proto {
 
     private static final float SIZE_FACTOR = 1.0f / 480;
 
+    private Color randomColor;
 
 
     public Microfly(Viewport viewport) {
@@ -33,7 +34,16 @@ public class Microfly extends Proto {
     public void init() {
         final float MAX_MUTATE = 1.0f;
         final float MIN_MUTATE = 0.75f;
-
+        switch (MathUtils.random(1)) {
+            case 0:
+                randomColor = Color.PURPLE;
+                break;
+            case 1:
+                randomColor = Color.valueOf("D5000000");
+                break;
+            default:
+                randomColor = Color.PURPLE;
+        }
         isTargetSet = false;
         float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
         size = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
@@ -56,8 +66,8 @@ public class Microfly extends Proto {
         velocity.y -= delta * DRAG * velocity.y;
 
         float cyclePosition = Timer.cyclePosition(initialTime, PERIOD);
-        float amplitude = size*18;
-        float cos = MathUtils.cos(MathUtils.PI2  * cyclePosition);
+        float amplitude = size * 18;
+        float cos = MathUtils.cos(MathUtils.PI2 * cyclePosition);
         float sin = MathUtils.sin(MathUtils.PI2 * cyclePosition);
 
         velocity.x += amplitude * cos;
@@ -73,10 +83,8 @@ public class Microfly extends Proto {
     public void render(ShapeRenderer renderer) {
         final int RENDER_COUNT = 3;
         renderer.set(ShapeRenderer.ShapeType.Line);
-//        Color color = isFollow ? Color.BLACK : Color.PURPLE;
-        Color color = Color.PURPLE;
-        renderer.setColor(color);
-            renderer.rect(position.x, position.y, size, size);
+        renderer.setColor(randomColor);
+        renderer.rect(position.x, position.y, size, size);
 
     }
 

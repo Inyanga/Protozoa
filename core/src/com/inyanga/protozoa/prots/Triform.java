@@ -47,8 +47,8 @@ public class Triform extends Proto {
 
     @Override
     public void update(float delta) {
-
-        follow((isRunningToPoint) ? ACCELERATION : -ACCELERATION);
+        float acceleration = (isRunningToPoint) ? ACCELERATION : -ACCELERATION;
+        follow(-ACCELERATION);
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
         float moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
         nextMove(moveDelay, ACCELERATION);
@@ -62,7 +62,7 @@ public class Triform extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
 
-        collideWithWalls(1.5f);
+        collideWithWalls(4.5f);
     }
 
     @Override

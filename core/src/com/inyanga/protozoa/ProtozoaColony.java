@@ -25,11 +25,11 @@ import java.util.List;
  */
 public class ProtozoaColony extends GameAdapter {
 
-    private static final int MAX_PROTS = 500;
+    private static final int MAX_PROTS = 600;
     private static final int PLANKTON_FACTOR = 5;
     private static final int TRI_FACTOR = 6;
-    private static final int TOUCH_THRESHOLD = 20;
-    private static final float LOGO_HIDE_FACTOR = 0.3f;
+    private static final int TOUCH_THRESHOLD = 13;
+    private static final float LOGO_HIDE_FACTOR = 0.6f;
     private Viewport viewport;
     private ShapeRenderer renderer;
     private float generateDelay;
@@ -40,7 +40,7 @@ public class ProtozoaColony extends GameAdapter {
 
     private SpriteBatch batch;
     private Sprite logoSprite;
-    private boolean isLogoVisible;
+    private static boolean isLogoVisible;
     private float logoAlpha;
     private BitmapFont font;
 
@@ -83,11 +83,11 @@ public class ProtozoaColony extends GameAdapter {
         nextGeneration += delta;
         if (nextGeneration >= generateDelay) {
             if (prots.size() < MAX_PROTS) {
-                Amoeba amoeba = new Amoeba(viewport);
-                prots.add(amoeba);
+                Proto mold = new Mold(viewport);
+                prots.add(mold);
                 if (prots.size() % 3 == 0) {
-                    Proto mold = new Mold(viewport);
-                    prots.add(mold);
+                    Amoeba amoeba = new Amoeba(viewport);
+                    prots.add(amoeba);
                     Microfly microfly = new Microfly(viewport);
                     prots.add(microfly);
                 }
@@ -100,6 +100,7 @@ public class ProtozoaColony extends GameAdapter {
                     prots.add(triform);
                 }
             }
+
             nextGeneration = 0.0f;
         }
         for (Proto p : prots) {
@@ -135,7 +136,6 @@ public class ProtozoaColony extends GameAdapter {
         batch.dispose();
         font.dispose();
     }
-
 
 
     @Override
@@ -179,6 +179,10 @@ public class ProtozoaColony extends GameAdapter {
             p.stopFollow();
         }
         return true;
+    }
+
+    public static boolean isLogoVisible() {
+        return isLogoVisible;
     }
 
 }
