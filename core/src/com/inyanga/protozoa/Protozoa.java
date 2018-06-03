@@ -6,6 +6,6 @@ public class Protozoa extends Game {
 
 	@Override
 	public void create() {
-		setScreen(new ProtozoaColony());
+		setScreen(new GameScreen());
 	}
 }

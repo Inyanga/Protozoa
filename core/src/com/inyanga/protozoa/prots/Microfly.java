@@ -51,7 +51,7 @@ public class Microfly extends Proto {
         position = setRandomPosition();
         initialTime = TimeUtils.nanoTime();
 
-        randomMove(ACCELERATION);
+        randomMove(0, ACCELERATION);
     }
 
     @Override
@@ -59,8 +59,8 @@ public class Microfly extends Proto {
 
         follow(ACCELERATION);
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
-        float moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
-        nextMove(moveDelay, ACCELERATION);
+        moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
+        randomMove(moveDelay, ACCELERATION);
 
         velocity.x -= delta * DRAG * velocity.x;
         velocity.y -= delta * DRAG * velocity.y;

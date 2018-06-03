@@ -4,16 +4,14 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.inyanga.protozoa.ProtozoaColony;
-
-import java.util.Random;
+import com.inyanga.protozoa.GameScreen;
 
 /**
  * Created by Pavel Shakhtarin on 24.05.2018.
  */
 public abstract class Proto {
 
-    private static final float TO_POINT_ACC = 200.0f;
+    private static final float TO_POINT_ACC = 70.0f;
     private static final float BOUND_X_DIVIDER = 4.0f;
     private static final float BOUND_Y_DIVIDER = 2.5f;
 
@@ -30,6 +28,7 @@ public abstract class Proto {
     float size;
     float rotation;
     float timeToNextMove;
+    float moveDelay;
     boolean isTargetSet;
     boolean isRunningToPoint;
 
@@ -44,11 +43,11 @@ public abstract class Proto {
         initialTime = 0L;
         isRunningToPoint = false;
         isFollow = false;
-        if(ProtozoaColony.isLogoVisible()) {
-            maxX = viewport.getWorldWidth() - viewport.getWorldWidth()/BOUND_X_DIVIDER;
-            maxY = viewport.getWorldHeight() - viewport.getWorldHeight()/BOUND_Y_DIVIDER;
-            minX = viewport.getWorldWidth()/BOUND_X_DIVIDER;
-            minY = viewport.getWorldHeight()/BOUND_Y_DIVIDER;
+        if (GameScreen.isLogoVisible()) {
+            maxX = viewport.getWorldWidth() - viewport.getWorldWidth() / BOUND_X_DIVIDER;
+            maxY = viewport.getWorldHeight() - viewport.getWorldHeight() / BOUND_Y_DIVIDER;
+            minX = viewport.getWorldWidth() / BOUND_X_DIVIDER;
+            minY = viewport.getWorldHeight() / BOUND_Y_DIVIDER;
         } else {
             maxX = viewport.getWorldWidth();
             maxY = viewport.getWorldHeight();
@@ -86,22 +85,15 @@ public abstract class Proto {
         }
     }
 
-    float randomMove(float acceleration) {
 
-        float angle = MathUtils.PI2 * MathUtils.random();
-        velocity.x = acceleration * MathUtils.cos(angle);
-        velocity.y = acceleration * MathUtils.sin(angle);
-        return angle;
-    }
 
     Vector2 setRandomPosition() {
-
-        float x = (MathUtils.random() * (maxX - minX)) + minX ;
-        float y = (MathUtils.random() * (maxY  - minY)) + minY;
+        float x = (MathUtils.random() * (maxX - minX)) + minX;
+        float y = (MathUtils.random() * (maxY - minY)) + minY;
         return new Vector2(x, y);
     }
 
-    public void runToPoint(Vector2 target) {
+    public void collapse(Vector2 target) {
         isRunningToPoint = true;
         movement = new Vector2(target.x - position.x, target.y - position.y);
         velocity.mulAdd(movement, TO_POINT_ACC);
@@ -118,24 +110,32 @@ public abstract class Proto {
             }
         }
     }
-    void nextMove(float moveDelay, float acceleration) {
+
+    float randomMove(float moveDelay, float acceleration) {
+        float angle = MathUtils.PI2 * MathUtils.random();
         if (timeToNextMove >= moveDelay) {
             if (!isFollow) {
                 timeToNextMove = MathUtils.random();
-                randomMove(acceleration);
+                velocity.x = acceleration * MathUtils.cos(angle);
+                velocity.y = acceleration * MathUtils.sin(angle);
             }
         }
+        return angle;
     }
 
-    public void stopFollow() {
+
+    public void release() {
         isTargetSet = false;
         isFollow = false;
         isRunningToPoint = false;
+        velocity.mulAdd(position, 0);
     }
+
     public void setTarget(Vector2 target) {
         this.target = target;
         isTargetSet = true;
     }
+
     public void setBounds(float maxX, float maxY, float minX, float minY) {
         this.maxX = maxX;
         this.maxY = maxY;

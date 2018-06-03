@@ -25,7 +25,6 @@ public class Plankton extends Proto {
     private static final float ROTATION_FACTOR = 15.0f;
 
 
-
     private float angle;
 
 
@@ -46,7 +45,7 @@ public class Plankton extends Proto {
 
         position = setRandomPosition();
         initialTime = TimeUtils.nanoTime();
-        angle = randomMove(ACCELERATION);
+        angle = randomMove(0, ACCELERATION);
     }
 
     @Override
@@ -55,8 +54,8 @@ public class Plankton extends Proto {
         follow(-ACCELERATION);
 
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
-        float moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
-        nextMove(moveDelay, ACCELERATION);
+        moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
+        randomMove(moveDelay, ACCELERATION);
 
         float cyclePosition = Timer.cyclePosition(initialTime, PERIOD);
         velocity.x -= delta * DRAG * velocity.x;
@@ -64,8 +63,8 @@ public class Plankton extends Proto {
         rotation = (MathUtils.random(2) - 1) * ROTATION_FACTOR * MathUtils.cos(MathUtils.PI2 * cyclePosition);
         velocity.clamp(0, MAX_SPEED);
 
-        position.x += delta * velocity.x - rotation * delta* size* 3 * MathUtils.sin(angle);;
-        position.y += delta * velocity.y + rotation * delta * size* 3 * MathUtils.cos(angle);
+        position.x += delta * velocity.x - rotation * delta * size * 3 * MathUtils.sin(angle);
+        position.y += delta * velocity.y + rotation * delta * size * 3 * MathUtils.cos(angle);
 
         collideWithWalls(1.5f);
     }
@@ -76,11 +75,5 @@ public class Plankton extends Proto {
         renderer.set(ShapeRenderer.ShapeType.Line);
         renderer.setColor(Color.PINK);
         renderer.circle(position.x, position.y, size);
-
     }
-
-
-
-
-
 }
