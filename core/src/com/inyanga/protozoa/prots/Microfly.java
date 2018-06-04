@@ -22,11 +22,14 @@ public class Microfly extends Proto {
 
     private static final float SIZE_FACTOR = 1.0f / 480;
 
+    private static final float MAX_LIFE_TIME = 45.0f;
+    private static final float MIN_LIFE_TIME = 25.0f;
+
     private Color randomColor;
 
 
-    public Microfly(Viewport viewport) {
-        super(viewport);
+    public Microfly(Viewport viewport,  LivingProcess colony) {
+        super(viewport, colony);
         init();
     }
 
@@ -47,10 +50,9 @@ public class Microfly extends Proto {
         isTargetSet = false;
         float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
         size = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
-
+        lifeTime = (MathUtils.random() * (MAX_LIFE_TIME - MIN_LIFE_TIME)) + MIN_LIFE_TIME;
         position = setRandomPosition();
         initialTime = TimeUtils.nanoTime();
-
         randomMove(0, ACCELERATION);
     }
 
@@ -75,7 +77,7 @@ public class Microfly extends Proto {
         velocity.clamp(0, MAX_SPEED);
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
-
+        living(delta);
         collideWithWalls(1.5f);
     }
 

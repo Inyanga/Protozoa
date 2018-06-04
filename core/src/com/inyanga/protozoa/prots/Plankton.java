@@ -24,12 +24,15 @@ public class Plankton extends Proto {
 
     private static final float ROTATION_FACTOR = 15.0f;
 
+    private static final float MAX_LIFE_TIME = 45.0f;
+    private static final float MIN_LIFE_TIME = 25.0f;
+
 
     private float angle;
 
 
-    public Plankton(Viewport viewport) {
-        super(viewport);
+    public Plankton(Viewport viewport,  LivingProcess colony) {
+        super(viewport,  colony);
         init();
     }
 
@@ -42,7 +45,7 @@ public class Plankton extends Proto {
         isTargetSet = false;
         float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
         size = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
-
+        lifeTime = (MathUtils.random() * (MAX_LIFE_TIME - MIN_LIFE_TIME)) + MIN_LIFE_TIME;
         position = setRandomPosition();
         initialTime = TimeUtils.nanoTime();
         angle = randomMove(0, ACCELERATION);
@@ -65,7 +68,7 @@ public class Plankton extends Proto {
 
         position.x += delta * velocity.x - rotation * delta * size * 3 * MathUtils.sin(angle);
         position.y += delta * velocity.y + rotation * delta * size * 3 * MathUtils.cos(angle);
-
+        living(delta);
         collideWithWalls(1.5f);
     }
 
@@ -73,7 +76,7 @@ public class Plankton extends Proto {
     public void render(ShapeRenderer renderer) {
         final int RENDER_COUNT = 3;
         renderer.set(ShapeRenderer.ShapeType.Line);
-        renderer.setColor(Color.PINK);
+        renderer.setColor(Color.valueOf("FFA00000"));
         renderer.circle(position.x, position.y, size);
     }
 }

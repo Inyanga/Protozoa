@@ -26,8 +26,6 @@ public class GameScreen extends GameAdapter {
     private ShapeRenderer renderer;
 
     private int dragTimer;
-    private int prevX;
-    private int prevY;
 
     private SpriteBatch batch;
     private Sprite logoSprite;
@@ -43,10 +41,7 @@ public class GameScreen extends GameAdapter {
         colony = ProtozoaColony.getInstance();
         viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         renderer = new ShapeRenderer();
-
         dragTimer = 0;
-        prevX = -1;
-        prevY = -1;
         isLogoVisible = true;
         logoAlpha = 1.0f;
         batch = new SpriteBatch();
@@ -93,6 +88,7 @@ public class GameScreen extends GameAdapter {
         renderer = new ShapeRenderer();
         viewport.update(width, height, true);
         colony.init(viewport, renderer);
+
         touchAreaSize = Math.min(viewport.getWorldWidth(), viewport.getWorldHeight()) / 15.0f;
     }
 
@@ -110,24 +106,20 @@ public class GameScreen extends GameAdapter {
         touchArea = new Rectangle(unproject.x - touchAreaSize / 2, unproject.y - touchAreaSize / 2, touchAreaSize, touchAreaSize);
         if (isLogoVisible) {
             colony.setFullBounds();
-            isLogoVisible = false;
-        }
 
+        }
+        isLogoVisible = false;
         return true;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         colony.setTarget(screenX, screenY);
-        //TODO Заменить проверкой по области
-
-//        if (screenX == prevX && screenY == prevY) {
         if (touchArea.contains(viewport.unproject(new Vector2(screenX, screenY)))) {
             dragTimer++;
         } else {
             dragTimer = 0;
-            prevX = screenX;
-            prevY = screenY;
+
         }
 
         if (dragTimer >= TOUCH_THRESHOLD) {
@@ -140,7 +132,6 @@ public class GameScreen extends GameAdapter {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         colony.release();
         dragTimer = 0;
-        touchArea = null;
         return true;
     }
 

@@ -15,34 +15,45 @@ public abstract class Proto {
     private static final float BOUND_X_DIVIDER = 4.0f;
     private static final float BOUND_Y_DIVIDER = 2.5f;
 
+    private LivingProcess colony;
+
     private Vector2 target;
     private Vector2 movement;
     private float reactionDistance;
     private float maxX, maxY, minX, minY;
     private boolean isFollow;
 
+
     Viewport viewport;
     Vector2 position;
     Vector2 velocity;
     long initialTime;
     float size;
+    float maxSize;
     float rotation;
     float timeToNextMove;
     float moveDelay;
+    float lifeTime;
+    boolean isDying;
     boolean isTargetSet;
     boolean isRunningToPoint;
 
 
-    Proto(Viewport viewport) {
+    Proto(Viewport viewport,  LivingProcess colony) {
         this.viewport = viewport;
+        this.colony = colony;
+
         position = new Vector2();
         velocity = new Vector2();
         target = new Vector2();
         size = 0.0f;
+        maxSize = 0.0f;
         rotation = 0.0f;
+        lifeTime = 10.0f;
         initialTime = 0L;
         isRunningToPoint = false;
         isFollow = false;
+        isDying  = false;
         if (GameScreen.isLogoVisible()) {
             maxX = viewport.getWorldWidth() - viewport.getWorldWidth() / BOUND_X_DIVIDER;
             maxY = viewport.getWorldHeight() - viewport.getWorldHeight() / BOUND_Y_DIVIDER;
@@ -56,6 +67,10 @@ public abstract class Proto {
         }
 
         reactionDistance = Math.min(viewport.getWorldWidth(), viewport.getWorldHeight()) / 4.0f;
+    }
+
+    public interface LivingProcess {
+        void dying(Proto deadProto);
     }
 
     public abstract void init();
@@ -84,7 +99,6 @@ public abstract class Proto {
             velocity.y = -velocity.y * velocityK;
         }
     }
-
 
 
     Vector2 setRandomPosition() {
@@ -123,6 +137,21 @@ public abstract class Proto {
         return angle;
     }
 
+    void living(float delta) {
+        if(!isFollow && !isRunningToPoint){
+            lifeTime -= delta;
+            if (lifeTime <= 0) {
+                isDying = true;
+                size -= delta * 2;
+                if(size <= 0) {
+                    colony.dying(this);
+                }
+
+            }
+        }
+
+
+    }
 
     public void release() {
         isTargetSet = false;

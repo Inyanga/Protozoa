@@ -24,9 +24,12 @@ public class Triform extends Proto {
     private static final float ROTATION_FACTOR = 50.0f;
     private static final float ROTATION_OFFSET = 45.0f;
 
+    private static final float MAX_LIFE_TIME = 25.0f;
+    private static final float MIN_LIFE_TIME = 15.0f;
 
-    public Triform(Viewport viewport) {
-        super(viewport);
+
+    public Triform(Viewport viewport, LivingProcess colony) {
+        super(viewport,  colony);
         init();
     }
 
@@ -38,10 +41,9 @@ public class Triform extends Proto {
         isTargetSet = false;
         float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
         size = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
-
+        lifeTime = (MathUtils.random() * (MAX_LIFE_TIME - MIN_LIFE_TIME)) + MIN_LIFE_TIME;
         position = setRandomPosition();
         initialTime = TimeUtils.nanoTime();
-
         randomMove(0, ACCELERATION);
     }
 
@@ -52,8 +54,6 @@ public class Triform extends Proto {
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
         moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
         randomMove(moveDelay, ACCELERATION);
-
-
         velocity.x -= delta * DRAG * velocity.x;
         velocity.y -= delta * DRAG * velocity.y;
         float cyclePosition = Timer.cyclePosition(initialTime, PERIOD);
@@ -61,7 +61,7 @@ public class Triform extends Proto {
         velocity.clamp(0, MAX_SPEED);
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
-
+        living(delta);
         collideWithWalls(4.5f);
     }
 

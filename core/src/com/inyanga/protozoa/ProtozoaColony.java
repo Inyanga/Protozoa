@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Created by Pavel Shakhtarin on 03.06.2018.
  */
-public class ProtozoaColony {
+public class ProtozoaColony implements Proto.LivingProcess {
 
 
     private static final ProtozoaColony ourInstance = new ProtozoaColony();
@@ -32,77 +32,107 @@ public class ProtozoaColony {
 
     private float generateDelay;
     private float nextGeneration;
-    private List<Proto> prots;
+    private List<Proto> livingProto;
+    private List<Proto> deadProto;
     private Viewport viewport;
     private ShapeRenderer renderer;
 
     private ProtozoaColony() {
-        prots = new ArrayList<Proto>();
-        generateDelay = 0.0f;
-        nextGeneration = 0.0f;
+
     }
 
     public void init(Viewport viewport, ShapeRenderer renderer) {
+        livingProto = new ArrayList<Proto>();
+        deadProto = new ArrayList<Proto>();
         this.viewport = viewport;
         this.renderer = renderer;
+        generateDelay = 0.0f;
+        nextGeneration = 0.0f;
+
     }
 
     public void render(float delta) {
         nextGeneration += delta;
         if (nextGeneration >= generateDelay) {
-            if (prots.size() < MAX_PROTS) {
-                if(MathUtils.random(1) == 0) {
-                    Proto mold = new Mold(viewport);
-                    prots.add(mold);
+            if (livingProto.size() < MAX_PROTS) {
+                if (MathUtils.random(1) == 0) {
+                    Proto mold = new Mold(viewport, this);
+                    livingProto.add(mold);
                 } else {
-                    Amoeba amoeba = new Amoeba(viewport);
-                    prots.add(amoeba);
+                    Amoeba amoeba = new Amoeba(viewport, this);
+                    livingProto.add(amoeba);
                 }
 
-                if (prots.size() % 3 == 0) {
+                if (livingProto.size() % 3 == 0) {
+                    switch (MathUtils.random(5)) {
+                        case 0:
+                            Microfly microfly = new Microfly(viewport, this);
+                            livingProto.add(microfly);
+                            break;
+                        case 1:
+                            Plankton plankton = new Plankton(viewport, this);
+                            livingProto.add(plankton);
+                            break;
+                        case 2:
+                            Triform triform = new Triform(viewport, this);
+                            livingProto.add(triform);
+                            break;
+                        default:
+                            microfly = new Microfly(viewport, this);
+                            livingProto.add(microfly);
+                            break;
+                    }
 
-                    Microfly microfly = new Microfly(viewport);
-                    prots.add(microfly);
                 }
-                if (prots.size() % PLANKTON_FACTOR == 0) {
-                    Plankton plankton = new Plankton(viewport);
-                    prots.add(plankton);
-                }
-                if (prots.size() % TRI_FACTOR == 0) {
-                    Triform triform = new Triform(viewport);
-                    prots.add(triform);
-                }
+//                if (livingProto.size() % PLANKTON_FACTOR == 0) {
+//
+//                }
+//                if (livingProto.size() % TRI_FACTOR == 0) {
+//
+//                }
             }
 
             nextGeneration = 0.0f;
         }
-        for (Proto p : prots) {
+        for (Proto p : livingProto) {
             p.update(delta);
             p.render(renderer);
+        }
+        if (deadProto.size() > 0) {
+            livingProto.removeAll(deadProto);
+            deadProto.clear();
         }
     }
 
     public void setFullBounds() {
-        for (Proto p : prots) {
+        for (Proto p : livingProto) {
             p.setBounds(viewport.getWorldWidth(), viewport.getWorldHeight(), 0, 0);
         }
     }
 
     public void setTarget(int x, int y) {
-        for (Proto p : prots) {
+        for (Proto p : livingProto) {
             p.setTarget(viewport.unproject(new Vector2(x, y)));
         }
     }
 
     public void collapse(int x, int y) {
-        for (Proto p : prots) {
+        for (Proto p : livingProto) {
             p.collapse(viewport.unproject(new Vector2(x, y)));
         }
     }
 
     public void release() {
-        for (Proto p : prots) {
+
+        for (Proto p : livingProto) {
             p.release();
         }
+    }
+
+    @Override
+    public void dying(Proto deadProto) {
+
+        this.deadProto.add(deadProto);
+
     }
 }

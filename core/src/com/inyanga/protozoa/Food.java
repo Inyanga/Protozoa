@@ -1,4 +1,4 @@
-package com.inyanga.protozoa.prots;
+package com.inyanga.protozoa;
 
 /**
  * Created by Pavel Shakhtarin on 03.06.2018.
