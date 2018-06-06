@@ -22,6 +22,10 @@ public class GameScreen extends GameAdapter {
 
     private static final int TOUCH_THRESHOLD = 13;
     private static final float LOGO_HIDE_FACTOR = 0.6f;
+
+    private static boolean isLogoVisible;
+    private static boolean isTouched = false;
+
     private Viewport viewport;
     private ShapeRenderer renderer;
 
@@ -29,12 +33,13 @@ public class GameScreen extends GameAdapter {
 
     private SpriteBatch batch;
     private Sprite logoSprite;
-    private static boolean isLogoVisible;
+
     private float logoAlpha;
     private BitmapFont font;
     private ProtozoaColony colony;
     private Rectangle touchArea;
     private float touchAreaSize;
+
 
     @Override
     public void show() {
@@ -88,7 +93,6 @@ public class GameScreen extends GameAdapter {
         renderer = new ShapeRenderer();
         viewport.update(width, height, true);
         colony.init(viewport, renderer);
-
         touchAreaSize = Math.min(viewport.getWorldWidth(), viewport.getWorldHeight()) / 15.0f;
     }
 
@@ -108,6 +112,7 @@ public class GameScreen extends GameAdapter {
             colony.setFullBounds();
 
         }
+        isTouched = true;
         isLogoVisible = false;
         return true;
     }
@@ -132,11 +137,14 @@ public class GameScreen extends GameAdapter {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         colony.release();
         dragTimer = 0;
+        isTouched = false;
         return true;
     }
 
     public static boolean isLogoVisible() {
         return isLogoVisible;
     }
-
+    public static boolean isTouched() {
+        return isTouched;
+    }
 }

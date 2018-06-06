@@ -14,46 +14,52 @@ public abstract class Proto {
     private static final float TO_POINT_ACC = 70.0f;
     private static final float BOUND_X_DIVIDER = 4.0f;
     private static final float BOUND_Y_DIVIDER = 2.5f;
+    private static final float BITE_DELAY = 0.5f;
+    private static final float TO_FOOD_ACC = 2.0f;
 
     private LivingProcess colony;
-
-    private Vector2 target;
-    private Vector2 movement;
+    private Vector2 target = new Vector2();
+    private Vector2 movement = new Vector2();
+    private Vector2 foodPosition = new Vector2();
     private float reactionDistance;
     private float maxX, maxY, minX, minY;
-    private boolean isFollow;
+    private boolean isFollow = false;
 
+    Viewport viewport = null;
+    Vector2 position = new Vector2();
+    Vector2 velocity = new Vector2();
+    long initialTime = 0L;
+    float size = 0.0f;
+    float maxSize = 0.0f;
+    float rotation = 0.0f;
+    float timeToNextMove = 0.0f;
+    float timeToNextBite = 0.0f;
+    float moveDelay = 5.0f;
+    float lifeTime = 10.0f;
+    float biteDamage = 0.1f;
+    boolean isDying = false;
+    boolean isTargetSet = false;
+    boolean isRunningToPoint = false;
 
-    Viewport viewport;
-    Vector2 position;
-    Vector2 velocity;
-    long initialTime;
-    float size;
-    float maxSize;
-    float rotation;
-    float timeToNextMove;
-    float moveDelay;
-    float lifeTime;
-    boolean isDying;
-    boolean isTargetSet;
-    boolean isRunningToPoint;
+    public interface LivingProcess {
+        void dying(Proto deadProto);
 
+        void bite(float biteDamage);
 
-    Proto(Viewport viewport,  LivingProcess colony) {
+        boolean isFoodReady();
+
+        Vector2 getFoodPosition();
+
+        float getFoodSize();
+    }
+
+    Proto(Viewport viewport, LivingProcess colony) {
         this.viewport = viewport;
         this.colony = colony;
 
-        position = new Vector2();
-        velocity = new Vector2();
-        target = new Vector2();
-        size = 0.0f;
-        maxSize = 0.0f;
-        rotation = 0.0f;
-        lifeTime = 10.0f;
-        initialTime = 0L;
-        isRunningToPoint = false;
-        isFollow = false;
-        isDying  = false;
+        if (colony.isFoodReady()) {
+            foodPosition = colony.getFoodPosition();
+        }
         if (GameScreen.isLogoVisible()) {
             maxX = viewport.getWorldWidth() - viewport.getWorldWidth() / BOUND_X_DIVIDER;
             maxY = viewport.getWorldHeight() - viewport.getWorldHeight() / BOUND_Y_DIVIDER;
@@ -69,9 +75,6 @@ public abstract class Proto {
         reactionDistance = Math.min(viewport.getWorldWidth(), viewport.getWorldHeight()) / 4.0f;
     }
 
-    public interface LivingProcess {
-        void dying(Proto deadProto);
-    }
 
     public abstract void init();
 
@@ -138,19 +141,16 @@ public abstract class Proto {
     }
 
     void living(float delta) {
-        if(!isFollow && !isRunningToPoint){
+        if (!isFollow && !isRunningToPoint) {
             lifeTime -= delta;
             if (lifeTime <= 0) {
                 isDying = true;
                 size -= delta * 2;
-                if(size <= 0) {
+                if (size <= 0) {
                     colony.dying(this);
                 }
-
             }
         }
-
-
     }
 
     public void release() {
@@ -165,10 +165,53 @@ public abstract class Proto {
         isTargetSet = true;
     }
 
+    public void setFoodPosition(Vector2 foodPosition) {
+        this.foodPosition = foodPosition;
+    }
+
+    public void feed(float delta, float acceleration) {
+
+        if (foodPosition != null && colony.isFoodReady() && !isFollow && !isRunningToPoint) {
+            if (foodPosition.dst(position) <= colony.getFoodSize() + size) {
+                velocity = new Vector2(0, 0);
+
+                timeToNextBite += delta;
+                if (timeToNextBite >= BITE_DELAY) {
+                    colony.bite(biteDamage);
+                    lifeTime += biteDamage;
+                    if (size < maxSize) {
+                        size += delta;
+                    }
+                    timeToNextBite = 0.0f;
+                }
+                return;
+            }
+            if (foodPosition.dst(position) <= reactionDistance) {
+                movement = new Vector2(foodPosition.x + colony.getFoodSize() / 2 - position.x, foodPosition.y + colony.getFoodSize() / 2 - position.y);
+                velocity = new Vector2(0, 0);
+                velocity.mulAdd(movement, TO_FOOD_ACC);
+            }
+
+
+        }
+    }
+
     public void setBounds(float maxX, float maxY, float minX, float minY) {
         this.maxX = maxX;
         this.maxY = maxY;
         this.minX = minX;
         this.minY = minY;
+    }
+
+    public Vector2 getPosition() {
+        return position;
+    }
+
+    public float getSize() {
+        return size;
+    }
+
+    public void setDying(boolean dying) {
+        isDying = dying;
     }
 }

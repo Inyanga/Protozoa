@@ -21,7 +21,7 @@ public class Mold extends Proto {
 
     private static final float PERIOD = 3.0f;
 
-    private static final float SIZE_FACTOR = 1.0f / 55;
+    private static final float SIZE_FACTOR = 1.0f / 61;
 
 
     private static final float ROTATION_OFFSET = 15.0f;
@@ -46,7 +46,7 @@ public class Mold extends Proto {
     @Override
     public void init() {
         final float MAX_MUTATE = 1.0f;
-        final float MIN_MUTATE = 0.5f;
+        final float MIN_MUTATE = 0.55f;
 
         switch (MathUtils.random(3)) {
             case 0:
@@ -91,6 +91,7 @@ public class Mold extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
+        feed(delta, ACCELERATION);
         collideWithWalls(1.5f);
     }
 

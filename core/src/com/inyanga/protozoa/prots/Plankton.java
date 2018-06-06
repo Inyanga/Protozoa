@@ -69,6 +69,7 @@ public class Plankton extends Proto {
         position.x += delta * velocity.x - rotation * delta * size * 3 * MathUtils.sin(angle);
         position.y += delta * velocity.y + rotation * delta * size * 3 * MathUtils.cos(angle);
         living(delta);
+        feed(delta, ACCELERATION);
         collideWithWalls(1.5f);
     }
 

@@ -18,11 +18,11 @@ public class Triform extends Proto {
     private static final float MIN_MOVE_DELAY = 4.0f;
     private static final float MAX_MOVE_DELAY = 5.0f;
 
-    private static final float PERIOD = 3.0f;
+    private static final float PERIOD = 15.0f;
 
-    private static final float SIZE_FACTOR = 1.0f / 84;
-    private static final float ROTATION_FACTOR = 50.0f;
-    private static final float ROTATION_OFFSET = 45.0f;
+    private static final float SIZE_FACTOR = 1.0f / 44;
+    private static final float ROTATION_FACTOR = 3.0f;
+    private static final float BIRTH_SIZE_FACTOR = 4.0f;
 
     private static final float MAX_LIFE_TIME = 25.0f;
     private static final float MIN_LIFE_TIME = 15.0f;
@@ -40,7 +40,7 @@ public class Triform extends Proto {
 
         isTargetSet = false;
         float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
-        size = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
+        maxSize = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
         lifeTime = (MathUtils.random() * (MAX_LIFE_TIME - MIN_LIFE_TIME)) + MIN_LIFE_TIME;
         position = setRandomPosition();
         initialTime = TimeUtils.nanoTime();
@@ -49,6 +49,9 @@ public class Triform extends Proto {
 
     @Override
     public void update(float delta) {
+        if (size < maxSize && !isDying) {
+            size += delta * BIRTH_SIZE_FACTOR;
+        }
         float acceleration = (isRunningToPoint) ? ACCELERATION : -ACCELERATION;
         follow(-ACCELERATION);
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
@@ -57,28 +60,30 @@ public class Triform extends Proto {
         velocity.x -= delta * DRAG * velocity.x;
         velocity.y -= delta * DRAG * velocity.y;
         float cyclePosition = Timer.cyclePosition(initialTime, PERIOD);
-        rotation += ROTATION_FACTOR * MathUtils.cos(MathUtils.PI2 * cyclePosition);
+        rotation += ROTATION_FACTOR * MathUtils.cos((MathUtils.PI2) * cyclePosition);
         velocity.clamp(0, MAX_SPEED);
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
+        feed(delta, ACCELERATION);
         collideWithWalls(4.5f);
     }
 
     @Override
     public void render(ShapeRenderer renderer) {
-        final int RENDER_COUNT = 2;
+        final int RENDER_COUNT = 10;
         renderer.set(ShapeRenderer.ShapeType.Line);
-//        Color color = isFollow ? Color.LIGHT_GRAY : Color.BLACK;
-        Color color = Color.BLACK;
-        renderer.setColor(color);
 
-        for (int i = 1; i <= RENDER_COUNT; i++) {
+        renderer.setColor(Color.BLACK);
 
-            renderer.circle(position.x, position.y, size / i, 3);
-            renderer.rect(position.x - size/2, position.y - size/2, size / 2, size / 2, size , size , 1.2f, 1.2f, rotation + ROTATION_OFFSET * i);
+
+
+//            renderer.circle(position.x+ size/2, position.y+ size/2, size, 8);
+
+        for (int i =2; i < RENDER_COUNT; i++) {
+            renderer.rect(position.x, position.y, size / 2, size / 2, size / i + 1, size / i + 1, 1.0f, 1.0f, rotation * i);
+//            renderer.rect(position.x, position.y, size / 2, size / 2, size / i + 1, size / i + 1, 1.0f, 1.0f, rotation  +  ROTATION_OFFSET * 2);
         }
-
     }
 
 

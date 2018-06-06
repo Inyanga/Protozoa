@@ -41,13 +41,15 @@ public class Amoeba extends Proto {
         final float MIN_MUTATE = 0.55f;
         switch (MathUtils.random(2)) {
             case 0:
-                randomColor = Color.valueOf("A5D6A700");
+//                randomColor = Color.valueOf("A5D6A700");
+                randomColor = Color.valueOf("8BC34A00");
                 break;
             case 1:
                 randomColor = Color.BLACK;
                 break;
             case 2:
                 randomColor = Color.valueOf("B39DDB00");
+
                 break;
             default:
                 randomColor = Color.BLACK;
@@ -79,6 +81,7 @@ public class Amoeba extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
+        feed(delta, ACCELERATION);
         collideWithWalls(1.5f);
     }
 
@@ -86,7 +89,6 @@ public class Amoeba extends Proto {
     public void render(ShapeRenderer renderer) {
         final int RENDER_COUNT = 3;
         renderer.set(ShapeRenderer.ShapeType.Line);
-//        Color color = isFollow ? Color.LIGHT_GRAY : Color.BLACK;
 
         renderer.setColor(Color.BLACK);
         renderer.rect(position.x, position.y, size / 2, size / 2, size, size, 1.0f, 1.0f, rotation);

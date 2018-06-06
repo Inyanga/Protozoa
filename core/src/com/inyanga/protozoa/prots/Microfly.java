@@ -78,6 +78,7 @@ public class Microfly extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
+        feed(delta, ACCELERATION);
         collideWithWalls(1.5f);
     }
 
