@@ -24,6 +24,8 @@ public class Microfly extends Proto {
 
     private static final float MAX_LIFE_TIME = 45.0f;
     private static final float MIN_LIFE_TIME = 25.0f;
+    private static final float MAX_MUTATE = 1.0f;
+    private static final float MIN_MUTATE = 0.75f;
 
     private Color randomColor;
 
@@ -35,8 +37,8 @@ public class Microfly extends Proto {
 
     @Override
     public void init() {
-        final float MAX_MUTATE = 1.0f;
-        final float MIN_MUTATE = 0.75f;
+        super.init();
+
         switch (MathUtils.random(1)) {
             case 0:
                 randomColor = Color.PURPLE;
@@ -78,7 +80,7 @@ public class Microfly extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
-        feed(delta, ACCELERATION);
+
         collideWithWalls(1.5f);
     }
 

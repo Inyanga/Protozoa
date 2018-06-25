@@ -1,6 +1,8 @@
 package com.inyanga.protozoa;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -19,47 +21,43 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class GameScreen extends GameAdapter {
 
-
     private static final int TOUCH_THRESHOLD = 13;
     private static final float LOGO_HIDE_FACTOR = 0.6f;
 
-    private static boolean isLogoVisible;
+    private static boolean isLogoVisible = true;
     private static boolean isTouched = false;
 
-    private Viewport viewport;
-    private ShapeRenderer renderer;
+    private Viewport viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    ;
+    private ShapeRenderer renderer = new ShapeRenderer();
+    ;
 
-    private int dragTimer;
+    private int dragTimer = 0;
 
-    private SpriteBatch batch;
-    private Sprite logoSprite;
-
-    private float logoAlpha;
-    private BitmapFont font;
-    private ProtozoaColony colony;
+    private SpriteBatch batch = new SpriteBatch();
+    private Texture texture = new Texture(Gdx.files.internal("protozoa_logo_pic.png"));
+    private Texture bgTexture = new Texture(Gdx.files.internal("bg2.png"));
+    private Sprite logoSprite = new Sprite(texture);
+    private Sprite bgSprite = new Sprite(bgTexture);
+    private float logoAlpha = 1.0f;
+    private BitmapFont font = new BitmapFont();
+    private ProtozoaColony colony = ProtozoaColony.getInstance();
+    ;
     private Rectangle touchArea;
     private float touchAreaSize;
 
-
     @Override
     public void show() {
-        colony = ProtozoaColony.getInstance();
-        viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        renderer = new ShapeRenderer();
-        dragTimer = 0;
-        isLogoVisible = true;
-        logoAlpha = 1.0f;
-        batch = new SpriteBatch();
-        Texture texture = new Texture(Gdx.files.internal("protozoa_logo_pic.png"));
-        logoSprite = new Sprite(texture);
+        Music ambient = Gdx.audio.newMusic(Gdx.files.internal("ambient_bg.mp3"));
+        ambient.play();
+        ambient.setLooping(true);
+        Sound intro = Gdx.audio.newSound(Gdx.files.internal("intro.mp3"));
+        intro.play();
         logoSprite.setPosition(Gdx.graphics.getWidth() / 2 - logoSprite.getWidth() / 2,
                 Gdx.graphics.getHeight() / 2 - logoSprite.getHeight() / 2);
-
-        font = new BitmapFont();
         font.getData().setScale(1);
         font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         Gdx.input.setInputProcessor(this);
-
     }
 
     @Override
@@ -103,17 +101,17 @@ public class GameScreen extends GameAdapter {
         font.dispose();
     }
 
-
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector2 unproject = viewport.unproject(new Vector2(screenX, screenY));
         touchArea = new Rectangle(unproject.x - touchAreaSize / 2, unproject.y - touchAreaSize / 2, touchAreaSize, touchAreaSize);
         if (isLogoVisible) {
             colony.setFullBounds();
-
         }
         isTouched = true;
         isLogoVisible = false;
+        Sound touchSound = Gdx.audio.newSound(Gdx.files.internal("touch.mp3"));
+        touchSound.play();
         return true;
     }
 
@@ -124,9 +122,7 @@ public class GameScreen extends GameAdapter {
             dragTimer++;
         } else {
             dragTimer = 0;
-
         }
-
         if (dragTimer >= TOUCH_THRESHOLD) {
             colony.collapse(screenX, screenY);
         }
@@ -144,6 +140,7 @@ public class GameScreen extends GameAdapter {
     public static boolean isLogoVisible() {
         return isLogoVisible;
     }
+
     public static boolean isTouched() {
         return isTouched;
     }

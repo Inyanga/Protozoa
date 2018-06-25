@@ -1,5 +1,6 @@
 package com.inyanga.protozoa.prots;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -14,8 +15,15 @@ public abstract class Proto {
     private static final float TO_POINT_ACC = 70.0f;
     private static final float BOUND_X_DIVIDER = 4.0f;
     private static final float BOUND_Y_DIVIDER = 2.5f;
-    private static final float BITE_DELAY = 0.5f;
+    private static final float BITE_DELAY = 0.3f;
     private static final float TO_FOOD_ACC = 2.0f;
+
+    private static final int COLOR_RANGE = 5;
+    private static final String GREEN = "8BC34A00";
+    private static final String PURPLE = "B39DDB00";
+    private static final String AQUA = "26C6DA00";
+    private static final String BLUE = "0088DC00";
+    private static final String PINK = "FF007F00";
 
     private LivingProcess colony;
     private Vector2 target = new Vector2();
@@ -23,7 +31,10 @@ public abstract class Proto {
     private Vector2 foodPosition = new Vector2();
     private float reactionDistance;
     private float maxX, maxY, minX, minY;
+    private float timeToNextBite = 0.0f;
+    private float biteDamage = 0.1f;
     private boolean isFollow = false;
+    private boolean isRunningToPoint = false;
 
     Viewport viewport = null;
     Vector2 position = new Vector2();
@@ -33,33 +44,26 @@ public abstract class Proto {
     float maxSize = 0.0f;
     float rotation = 0.0f;
     float timeToNextMove = 0.0f;
-    float timeToNextBite = 0.0f;
+
     float moveDelay = 5.0f;
     float lifeTime = 10.0f;
-    float biteDamage = 0.1f;
+
     boolean isDying = false;
     boolean isTargetSet = false;
-    boolean isRunningToPoint = false;
+
 
     public interface LivingProcess {
         void dying(Proto deadProto);
-
-        void bite(float biteDamage);
-
-        boolean isFoodReady();
-
-        Vector2 getFoodPosition();
-
-        float getFoodSize();
     }
 
     Proto(Viewport viewport, LivingProcess colony) {
         this.viewport = viewport;
         this.colony = colony;
+    }
 
-        if (colony.isFoodReady()) {
-            foodPosition = colony.getFoodPosition();
-        }
+
+    public void init() {
+
         if (GameScreen.isLogoVisible()) {
             maxX = viewport.getWorldWidth() - viewport.getWorldWidth() / BOUND_X_DIVIDER;
             maxY = viewport.getWorldHeight() - viewport.getWorldHeight() / BOUND_Y_DIVIDER;
@@ -74,9 +78,6 @@ public abstract class Proto {
 
         reactionDistance = Math.min(viewport.getWorldWidth(), viewport.getWorldHeight()) / 4.0f;
     }
-
-
-    public abstract void init();
 
     public abstract void update(float delta);
 
@@ -169,32 +170,6 @@ public abstract class Proto {
         this.foodPosition = foodPosition;
     }
 
-    public void feed(float delta, float acceleration) {
-
-        if (foodPosition != null && colony.isFoodReady() && !isFollow && !isRunningToPoint) {
-            if (foodPosition.dst(position) <= colony.getFoodSize() + size) {
-                velocity = new Vector2(0, 0);
-
-                timeToNextBite += delta;
-                if (timeToNextBite >= BITE_DELAY) {
-                    colony.bite(biteDamage);
-                    lifeTime += biteDamage;
-                    if (size < maxSize) {
-                        size += delta;
-                    }
-                    timeToNextBite = 0.0f;
-                }
-                return;
-            }
-            if (foodPosition.dst(position) <= reactionDistance) {
-                movement = new Vector2(foodPosition.x + colony.getFoodSize() / 2 - position.x, foodPosition.y + colony.getFoodSize() / 2 - position.y);
-                velocity = new Vector2(0, 0);
-                velocity.mulAdd(movement, TO_FOOD_ACC);
-            }
-
-
-        }
-    }
 
     public void setBounds(float maxX, float maxY, float minX, float minY) {
         this.maxX = maxX;
@@ -211,7 +186,21 @@ public abstract class Proto {
         return size;
     }
 
-    public void setDying(boolean dying) {
-        isDying = dying;
+    Color setRandomColor() {
+        switch (MathUtils.random(COLOR_RANGE)) {
+            case 0:
+                return Color.valueOf(GREEN);
+            case 1:
+                return Color.valueOf(AQUA);
+            case 2:
+                return Color.valueOf(PURPLE);
+            case 3:
+                return Color.valueOf(BLUE);
+            case 4:
+                return Color.valueOf(PINK);
+            default:
+                return Color.BLACK;
+        }
     }
+
 }

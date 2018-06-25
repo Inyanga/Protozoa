@@ -21,13 +21,15 @@ public class Mold extends Proto {
 
     private static final float PERIOD = 3.0f;
 
-    private static final float SIZE_FACTOR = 1.0f / 61;
+    private static final float SIZE_FACTOR = 1.0f / 70;
 
 
     private static final float ROTATION_OFFSET = 15.0f;
 
     private static final float MAX_LIFE_TIME = 25.0f;
     private static final float MIN_LIFE_TIME = 15.0f;
+    private static final float MAX_MUTATE = 1.0f;
+    private static final float MIN_MUTATE = 0.55f;
     private static final float BIRTH_SIZE_FACTOR = 4.0f;
 
     private float cyclePosition;
@@ -42,28 +44,10 @@ public class Mold extends Proto {
         init();
     }
 
-
     @Override
     public void init() {
-        final float MAX_MUTATE = 1.0f;
-        final float MIN_MUTATE = 0.55f;
-
-        switch (MathUtils.random(3)) {
-            case 0:
-                randomColor = Color.valueOf("26C6DA00");
-                break;
-            case 1:
-                randomColor = Color.valueOf("EF9A9A00");
-                break;
-            case 2:
-                randomColor = Color.valueOf("01579B00");
-                break;
-            case 3:
-                randomColor = Color.BLACK;
-                break;
-            default:
-                randomColor = Color.BLACK;
-        }
+        super.init();
+        randomColor = setRandomColor();
         isTargetSet = false;
         direction = MathUtils.random(1);
         float mutationFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
@@ -91,7 +75,7 @@ public class Mold extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
-        feed(delta, ACCELERATION);
+
         collideWithWalls(1.5f);
     }
 

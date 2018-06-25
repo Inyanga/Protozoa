@@ -24,12 +24,13 @@ public class Plankton extends Proto {
 
     private static final float ROTATION_FACTOR = 15.0f;
 
-    private static final float MAX_LIFE_TIME = 45.0f;
-    private static final float MIN_LIFE_TIME = 25.0f;
-
+    private static final float MAX_LIFE_TIME = 20.0f;
+    private static final float MIN_LIFE_TIME = 12.0f;
+    private static final float MAX_MUTATE = 1.0f;
+    private static final float MIN_MUTATE = 0.6f;
 
     private float angle;
-
+    private Color randomColor;
 
     public Plankton(Viewport viewport,  LivingProcess colony) {
         super(viewport,  colony);
@@ -39,9 +40,7 @@ public class Plankton extends Proto {
 
     @Override
     public void init() {
-        final float MAX_MUTATE = 1.0f;
-        final float MIN_MUTATE = 0.6f;
-
+        super.init();
         isTargetSet = false;
         float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
         size = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
@@ -49,35 +48,32 @@ public class Plankton extends Proto {
         position = setRandomPosition();
         initialTime = TimeUtils.nanoTime();
         angle = randomMove(0, ACCELERATION);
+        randomColor = setRandomColor();
     }
 
     @Override
     public void update(float delta) {
 
-        follow(-ACCELERATION);
-
+        follow(ACCELERATION);
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
         moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
         randomMove(moveDelay, ACCELERATION);
-
         float cyclePosition = Timer.cyclePosition(initialTime, PERIOD);
         velocity.x -= delta * DRAG * velocity.x;
         velocity.y -= delta * DRAG * velocity.y;
-        rotation = (MathUtils.random(2) - 1) * ROTATION_FACTOR * MathUtils.cos(MathUtils.PI2 * cyclePosition);
+        rotation = MathUtils.random() * ROTATION_FACTOR * MathUtils.cos(MathUtils.PI2 * cyclePosition);
         velocity.clamp(0, MAX_SPEED);
-
         position.x += delta * velocity.x - rotation * delta * size * 3 * MathUtils.sin(angle);
         position.y += delta * velocity.y + rotation * delta * size * 3 * MathUtils.cos(angle);
         living(delta);
-        feed(delta, ACCELERATION);
+
         collideWithWalls(1.5f);
     }
 
     @Override
     public void render(ShapeRenderer renderer) {
-        final int RENDER_COUNT = 3;
         renderer.set(ShapeRenderer.ShapeType.Line);
-        renderer.setColor(Color.valueOf("FFA00000"));
+        renderer.setColor(randomColor);
         renderer.circle(position.x, position.y, size);
     }
 }

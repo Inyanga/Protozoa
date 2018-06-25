@@ -20,14 +20,16 @@ public class Amoeba extends Proto {
 
     private static final float PERIOD = 3.0f;
 
-    private static final float SIZE_FACTOR = 1.0f / 28;
+    private static final float SIZE_FACTOR = 1.0f / 38;
 
     private static final float ROTATION_FACTOR = 15.0f;
     private static final float ROTATION_OFFSET = 45.0f;
 
     private static final float MAX_LIFE_TIME = 25.0f;
     private static final float MIN_LIFE_TIME = 15.0f;
-    private static final float BIRTH_SIZE_FACTOR = 4.0f;
+    private static final float MAX_MUTATE = 1.0f;
+    private static final float MIN_MUTATE = 0.55f;
+    private static final float BIRTH_SIZE_FACTOR = 2.0f;
     private Color randomColor;
 
     public Amoeba(Viewport viewport, LivingProcess colony) {
@@ -37,24 +39,10 @@ public class Amoeba extends Proto {
 
     @Override
     public void init() {
-        final float MAX_MUTATE = 1.0f;
-        final float MIN_MUTATE = 0.55f;
-        switch (MathUtils.random(2)) {
-            case 0:
-//                randomColor = Color.valueOf("A5D6A700");
-                randomColor = Color.valueOf("8BC34A00");
-                break;
-            case 1:
-                randomColor = Color.BLACK;
-                break;
-            case 2:
-                randomColor = Color.valueOf("B39DDB00");
+        super.init();
 
-                break;
-            default:
-                randomColor = Color.BLACK;
-        }
-        isTargetSet = false;
+        randomColor = setRandomColor();
+
         float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
         maxSize = randomFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
         lifeTime = (MathUtils.random() * (MAX_LIFE_TIME - MIN_LIFE_TIME)) + MIN_LIFE_TIME;
@@ -81,7 +69,7 @@ public class Amoeba extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
-        feed(delta, ACCELERATION);
+
         collideWithWalls(1.5f);
     }
 

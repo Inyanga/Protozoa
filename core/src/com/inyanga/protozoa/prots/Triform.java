@@ -22,10 +22,12 @@ public class Triform extends Proto {
 
     private static final float SIZE_FACTOR = 1.0f / 44;
     private static final float ROTATION_FACTOR = 3.0f;
-    private static final float BIRTH_SIZE_FACTOR = 4.0f;
+    private static final float BIRTH_SIZE_FACTOR = 1.0f;
 
     private static final float MAX_LIFE_TIME = 25.0f;
     private static final float MIN_LIFE_TIME = 15.0f;
+    private static final float MAX_MUTATE = 1.0f;
+    private static final float MIN_MUTATE = 0.75f;
 
 
     public Triform(Viewport viewport, LivingProcess colony) {
@@ -35,8 +37,7 @@ public class Triform extends Proto {
 
     @Override
     public void init() {
-        final float MAX_MUTATE = 1.0f;
-        final float MIN_MUTATE = 0.75f;
+        super.init();
 
         isTargetSet = false;
         float randomFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
@@ -52,8 +53,8 @@ public class Triform extends Proto {
         if (size < maxSize && !isDying) {
             size += delta * BIRTH_SIZE_FACTOR;
         }
-        float acceleration = (isRunningToPoint) ? ACCELERATION : -ACCELERATION;
-        follow(-ACCELERATION);
+
+        follow(ACCELERATION);
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
         moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
         randomMove(moveDelay, ACCELERATION);
@@ -65,7 +66,7 @@ public class Triform extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
-        feed(delta, ACCELERATION);
+
         collideWithWalls(4.5f);
     }
 
