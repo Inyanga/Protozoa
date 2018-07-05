@@ -13,24 +13,38 @@ import com.inyanga.protozoa.Timer;
  */
 public class Mold extends Proto {
 
+    // Максимально возможная скорость
     private static final float MAX_SPEED = 350.0f;
+
+    // Ускорение
     private static final float ACCELERATION = 70.0f;
+
+    // Коэффициент замедления движения
     private static final float DRAG = 0.8f;
+
+    //Границы в которых вычисляется время до следующего перемещения
     private static final float MIN_MOVE_DELAY = 4.8f;
     private static final float MAX_MOVE_DELAY = 7.5f;
 
+    // Период вращения
     private static final float PERIOD = 3.0f;
 
+    // Коэффициент влияющий на размер объекта
     private static final float SIZE_FACTOR = 1.0f / 70;
 
-
+    // Коэффициент смещения
     private static final float ROTATION_OFFSET = 15.0f;
 
+    // Границы в которых вычисляется время жизни объекта
     private static final float MAX_LIFE_TIME = 25.0f;
     private static final float MIN_LIFE_TIME = 15.0f;
+
+    // Границы в которых вычисляется размер объекта
     private static final float MAX_MUTATE = 1.0f;
     private static final float MIN_MUTATE = 0.55f;
-    private static final float BIRTH_SIZE_FACTOR = 4.0f;
+
+    // Коэффициент с которым объект растет до максимального размера
+    private static final float BIRTH_SIZE_FACTOR = 2.5f;
 
     private float cyclePosition;
 
@@ -49,39 +63,55 @@ public class Mold extends Proto {
         super.init();
         randomColor = setRandomColor();
         isTargetSet = false;
+
+        //  Направление вращения
         direction = MathUtils.random(1);
+
+        // Коэффициент создающий разброс в размерах объектов
         float mutationFactor = (MathUtils.random() * (MAX_MUTATE - MIN_MUTATE)) + MIN_MUTATE;
         lifeTime = (MathUtils.random() * (MAX_LIFE_TIME - MIN_LIFE_TIME)) + MIN_LIFE_TIME;
         maxSize = mutationFactor * SIZE_FACTOR * Math.min(viewport.getWorldWidth(), viewport.getWorldHeight());
         position = setRandomPosition();
         satellitePos = new Vector2();
         initialTime = TimeUtils.nanoTime();
-        randomMove(0, ACCELERATION);
+        randomMove(ACCELERATION, MIN_MOVE_DELAY, MAX_MOVE_DELAY);
     }
 
     @Override
     public void update(float delta) {
         if (size < maxSize && !isDying) {
+            // Если размер объекта меньше максимального и время жизни не истекло, увеличивает размер
             size += delta * BIRTH_SIZE_FACTOR;
         }
+
+        // Определение положения в цикле
         cyclePosition = Timer.cyclePosition(initialTime, PERIOD);
         follow(ACCELERATION);
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
-        moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
-        randomMove(moveDelay, ACCELERATION);
+        if (timeToNextMove >= moveDelay) {
+            randomMove(ACCELERATION, MIN_MOVE_DELAY, MAX_MOVE_DELAY);
+        }
+
+        // Постепенное торможение объекта
         velocity.x -= delta * DRAG * velocity.x;
         velocity.y -= delta * DRAG * velocity.y;
+
+        // Метод не позволяющий ускорению подняться больше максимума
         velocity.clamp(0, MAX_SPEED);
+
+        // Обновление позиции объекта
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
-        living(delta);
 
+        living(delta);
         collideWithWalls(1.5f);
     }
 
     @Override
     public void render(ShapeRenderer renderer) {
-        final int RENDER_COUNT = 9;
+
+        // Рендер объекта
+        final int RENDER_COUNT = 6;
         renderer.set(ShapeRenderer.ShapeType.Line);
         renderer.setColor(Color.BLACK);
         renderer.circle(position.x, position.y, size);

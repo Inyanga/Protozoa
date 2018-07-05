@@ -45,7 +45,7 @@ public class Triform extends Proto {
         lifeTime = (MathUtils.random() * (MAX_LIFE_TIME - MIN_LIFE_TIME)) + MIN_LIFE_TIME;
         position = setRandomPosition();
         initialTime = TimeUtils.nanoTime();
-        randomMove(0, ACCELERATION);
+        randomMove(ACCELERATION, MIN_MOVE_DELAY, MAX_MOVE_DELAY);
     }
 
     @Override
@@ -53,11 +53,11 @@ public class Triform extends Proto {
         if (size < maxSize && !isDying) {
             size += delta * BIRTH_SIZE_FACTOR;
         }
-
         follow(ACCELERATION);
         timeToNextMove += delta + delta * MathUtils.random() * 2f;
-        moveDelay = MathUtils.random() * (MAX_MOVE_DELAY - MIN_MOVE_DELAY) + MIN_MOVE_DELAY;
-        randomMove(moveDelay, ACCELERATION);
+        if (timeToNextMove >= moveDelay) {
+            randomMove(ACCELERATION, MIN_MOVE_DELAY, MAX_MOVE_DELAY);
+        }
         velocity.x -= delta * DRAG * velocity.x;
         velocity.y -= delta * DRAG * velocity.y;
         float cyclePosition = Timer.cyclePosition(initialTime, PERIOD);
@@ -66,7 +66,6 @@ public class Triform extends Proto {
         position.x += delta * velocity.x;
         position.y += delta * velocity.y;
         living(delta);
-
         collideWithWalls(4.5f);
     }
 
@@ -74,16 +73,10 @@ public class Triform extends Proto {
     public void render(ShapeRenderer renderer) {
         final int RENDER_COUNT = 10;
         renderer.set(ShapeRenderer.ShapeType.Line);
-
         renderer.setColor(Color.BLACK);
-
-
-
-//            renderer.circle(position.x+ size/2, position.y+ size/2, size, 8);
 
         for (int i =2; i < RENDER_COUNT; i++) {
             renderer.rect(position.x, position.y, size / 2, size / 2, size / i + 1, size / i + 1, 1.0f, 1.0f, rotation * i);
-//            renderer.rect(position.x, position.y, size / 2, size / 2, size / i + 1, size / i + 1, 1.0f, 1.0f, rotation  +  ROTATION_OFFSET * 2);
         }
     }
 

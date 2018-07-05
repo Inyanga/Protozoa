@@ -8,4 +8,5 @@ public class Protozoa extends Game {
 	public void create() {
 		setScreen(new GameScreen());
 	}
+
 }

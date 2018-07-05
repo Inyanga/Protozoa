@@ -10,6 +10,7 @@ import com.inyanga.protozoa.prots.Mold;
 import com.inyanga.protozoa.prots.Plankton;
 import com.inyanga.protozoa.prots.Proto;
 import com.inyanga.protozoa.prots.Triform;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +20,6 @@ import java.util.List;
 public class ProtozoaColony implements Proto.LivingProcess {
 
 
-
-
     private static final ProtozoaColony ourInstance = new ProtozoaColony();
 
     public static ProtozoaColony getInstance() {
@@ -28,7 +27,7 @@ public class ProtozoaColony implements Proto.LivingProcess {
     }
 
     private static final int MAX_PROTS = 520;
-    private static final float GENERATE_DELAY = 0.2f;
+    private static final float GENERATE_DELAY = 0.0f;
 
     private float nextProto = 0.0f;
 
@@ -43,6 +42,8 @@ public class ProtozoaColony implements Proto.LivingProcess {
     }
 
     public void init(Viewport viewport, ShapeRenderer renderer) {
+        livingProto = new ArrayList<Proto>();
+        deadProto = new ArrayList<Proto>();
         this.viewport = viewport;
         this.renderer = renderer;
     }
@@ -58,19 +59,14 @@ public class ProtozoaColony implements Proto.LivingProcess {
                     Amoeba amoeba = new Amoeba(viewport, this);
                     livingProto.add(amoeba);
                 }
-
                 if (livingProto.size() % 3 == 0) {
-
-                    if (MathUtils.random(1) == 0) {
-                        Microfly microfly = new Microfly(viewport, this);
-                        livingProto.add(microfly);
-                    } else {
-                        Plankton plankton = new Plankton(viewport, this);
-                        livingProto.add(plankton);
-                    }
+                    Microfly microfly = new Microfly(viewport, this);
+                    livingProto.add(microfly);
                     if (livingProto.size() % 5 == 0) {
                         Triform triform = new Triform(viewport, this);
                         livingProto.add(triform);
+                        Plankton plankton = new Plankton(viewport, this);
+                        livingProto.add(plankton);
                     }
                 }
             }

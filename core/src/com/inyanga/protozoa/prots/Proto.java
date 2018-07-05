@@ -10,49 +10,89 @@ import com.inyanga.protozoa.GameScreen;
 /**
  * Created by Pavel Shakhtarin on 24.05.2018.
  */
+
+//  Абстрактный класс от которого наследуются все прото,
+//  определяет абстрактные методы update и render
 public abstract class Proto {
 
+    //  Ускорение для перемещения при касании экрана
     private static final float TO_POINT_ACC = 70.0f;
+
+    //  Коэффициенты  задающие область появления объектов когда на экране отображено лого
+    //  для создания эффекта подвижной надписи
     private static final float BOUND_X_DIVIDER = 4.0f;
     private static final float BOUND_Y_DIVIDER = 2.5f;
-    private static final float BITE_DELAY = 0.3f;
-    private static final float TO_FOOD_ACC = 2.0f;
 
-    private static final int COLOR_RANGE = 5;
+    // Цвета объектов
+    private static final int COLOR_RANGE = 4;
     private static final String GREEN = "8BC34A00";
     private static final String PURPLE = "B39DDB00";
     private static final String AQUA = "26C6DA00";
     private static final String BLUE = "0088DC00";
     private static final String PINK = "FF007F00";
 
+    // Переменная хранящая объект, реализующий интерфейс LivingProcess
     private LivingProcess colony;
+
+    // Вектор, хранящий координаты касания экрана
     private Vector2 target = new Vector2();
+
+    // Вектор направления движения при касании
     private Vector2 movement = new Vector2();
-    private Vector2 foodPosition = new Vector2();
+
+    // Расстояние реакции на касание
     private float reactionDistance;
+
+    // Координаты границ за которые не могут выходить объекты
     private float maxX, maxY, minX, minY;
-    private float timeToNextBite = 0.0f;
-    private float biteDamage = 0.1f;
+
+    // Следует ли за объект за касанием
     private boolean isFollow = false;
+
+    // Движется ли объект к точке при длительном касании экрана
     private boolean isRunningToPoint = false;
 
+    // Вьюпорт устройства
     Viewport viewport = null;
+
+    // Вектор текущего положения объекта
     Vector2 position = new Vector2();
+
+    // Вектор ускорения
     Vector2 velocity = new Vector2();
+
+    // Время появления объекта
     long initialTime = 0L;
+
+    // Текущий размер объекта
     float size = 0.0f;
+
+    // Максимальный размер объекта
     float maxSize = 0.0f;
+
+    // Угол поворота
     float rotation = 0.0f;
+
+    // Перменная увеличивающаяся с каждым фреймом,
+    // когда становится >= moveDelay происходит следующее перемещение
     float timeToNextMove = 0.0f;
 
-    float moveDelay = 5.0f;
+    // Время до следующего перемещения
+    float moveDelay = 0.0f;
+
+    // Время жизни объекта. Уменьшается с каждым фреймом, если объект не следует за касанием
     float lifeTime = 10.0f;
 
+    // true, когда lifeTime <= 0
     boolean isDying = false;
+
+    // true, когда произошло касание дисплея
     boolean isTargetSet = false;
 
 
     public interface LivingProcess {
+
+        // callback который будет вызван при lifeTime <= 0
         void dying(Proto deadProto);
     }
 
@@ -63,6 +103,8 @@ public abstract class Proto {
 
 
     public void init() {
+
+        // Задание границ за которые не может выйти объект в зависимости от видимости лого
 
         if (GameScreen.isLogoVisible()) {
             maxX = viewport.getWorldWidth() - viewport.getWorldWidth() / BOUND_X_DIVIDER;
@@ -76,6 +118,7 @@ public abstract class Proto {
             minY = 0;
         }
 
+        // Расчет дистанции реакции на касание
         reactionDistance = Math.min(viewport.getWorldWidth(), viewport.getWorldHeight()) / 4.0f;
     }
 
@@ -85,6 +128,8 @@ public abstract class Proto {
 
 
     void collideWithWalls(float velocityK) {
+
+        // Проверка столкновения с заданными границами, изменение вектора ускорения
 
         if (position.x - size < minX) {
             position.x = minX + size;
@@ -106,18 +151,24 @@ public abstract class Proto {
 
 
     Vector2 setRandomPosition() {
+
+        // Возвращает рандомный вектор в рамках указанных значений
         float x = (MathUtils.random() * (maxX - minX)) + minX;
         float y = (MathUtils.random() * (maxY - minY)) + minY;
         return new Vector2(x, y);
     }
 
     public void collapse(Vector2 target) {
+
+        // Метод собирает все объекты в точку при длительном касании
         isRunningToPoint = true;
         movement = new Vector2(target.x - position.x, target.y - position.y);
         velocity.mulAdd(movement, TO_POINT_ACC);
     }
 
     void follow(float acceleration) {
+
+        // Если расстояние до касания <= reactionDistance объект начинает движение к точке касания
         if (isTargetSet && !isRunningToPoint) {
             if (target.dst(position) <= reactionDistance) {
                 isFollow = true;
@@ -129,22 +180,25 @@ public abstract class Proto {
         }
     }
 
-    float randomMove(float moveDelay, float acceleration) {
-        float angle = MathUtils.PI2 * MathUtils.random();
-        if (timeToNextMove >= moveDelay) {
-            if (!isFollow) {
-                timeToNextMove = MathUtils.random();
-                velocity.x = acceleration * MathUtils.cos(angle);
-                velocity.y = acceleration * MathUtils.sin(angle);
-            }
+    void randomMove(float acceleration, float minDelay, float maxDelay) {
+
+        // Метод задает движение объекта в случаайно выбранном направлении
+
+        if (!isFollow) {
+            float angle = MathUtils.PI2 * MathUtils.random();
+            timeToNextMove = MathUtils.random();
+            moveDelay = MathUtils.random() * (maxDelay - minDelay) + minDelay;
+            velocity.x = acceleration * MathUtils.cos(angle);
+            velocity.y = acceleration * MathUtils.sin(angle);
         }
-        return angle;
     }
 
     void living(float delta) {
         if (!isFollow && !isRunningToPoint) {
+            // Уменьшение вреиени жизни каждый фрейм
             lifeTime -= delta;
             if (lifeTime <= 0) {
+                // Если время жизни истекло объект начинает уменьшаться
                 isDying = true;
                 size -= delta * 2;
                 if (size <= 0) {
@@ -166,24 +220,12 @@ public abstract class Proto {
         isTargetSet = true;
     }
 
-    public void setFoodPosition(Vector2 foodPosition) {
-        this.foodPosition = foodPosition;
-    }
-
 
     public void setBounds(float maxX, float maxY, float minX, float minY) {
         this.maxX = maxX;
         this.maxY = maxY;
         this.minX = minX;
         this.minY = minY;
-    }
-
-    public Vector2 getPosition() {
-        return position;
-    }
-
-    public float getSize() {
-        return size;
     }
 
     Color setRandomColor() {
